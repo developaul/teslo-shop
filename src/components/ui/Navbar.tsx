@@ -1,11 +1,19 @@
 import NextLink from 'next/link'
+import { useContext } from 'react'
+import { useRouter } from 'next/router'
 import { AppBar, Badge, Box, Button, IconButton, Link, Toolbar, Typography } from "@mui/material"
 import {
   SearchOutlined as SearchOutlinedIcon,
   ShoppingCartOutlined as ShoppingCartOutlinedIcon
 } from '@mui/icons-material'
 
+import { UiContext } from '@/context'
+
 export const Navbar = () => {
+  const { query: { gender } } = useRouter()
+
+  const { toogleSideMenu } = useContext(UiContext)
+
   return (
     <AppBar>
       <Toolbar>
@@ -18,17 +26,17 @@ export const Navbar = () => {
 
         <Box sx={{ display: { xs: 'none', md: 'block' } }}>
           <Link component={NextLink} href='/category/men'>
-            <Button>
+            <Button color={gender === 'men' ? 'primary' : 'info'} >
               Hombres
             </Button>
           </Link>
           <Link component={NextLink} href='/category/women'>
-            <Button>
+            <Button color={gender === 'women' ? 'primary' : 'info'} >
               Mujeres
             </Button>
           </Link>
           <Link component={NextLink} href='/category/kid'>
-            <Button>
+            <Button color={gender === 'kid' ? 'primary' : 'info'} >
               Ninos
             </Button>
           </Link>
@@ -48,7 +56,7 @@ export const Navbar = () => {
           </IconButton>
         </Link>
 
-        <Button>
+        <Button onClick={toogleSideMenu} >
           Menu
         </Button>
       </Toolbar>

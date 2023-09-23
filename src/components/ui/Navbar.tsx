@@ -1,8 +1,9 @@
 import NextLink from 'next/link'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { useRouter } from 'next/router'
-import { AppBar, Badge, Box, Button, IconButton, Link, Toolbar, Typography } from "@mui/material"
+import { AppBar, Badge, Box, Button, IconButton, Input, InputAdornment, Link, Toolbar, Typography } from "@mui/material"
 import {
+  ClearOutlined as ClearOutlinedIcon,
   SearchOutlined as SearchOutlinedIcon,
   ShoppingCartOutlined as ShoppingCartOutlinedIcon
 } from '@mui/icons-material'
@@ -10,9 +11,17 @@ import {
 import { UiContext } from '@/context'
 
 export const Navbar = () => {
-  const { query: { gender } } = useRouter()
+  const { query: { gender }, push } = useRouter()
 
   const { toogleSideMenu } = useContext(UiContext)
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isSearchVisible, setIsSearchVisible] = useState(false)
+
+  const onSearchTerm = () => {
+    if (searchTerm.trim().length === 0) return
+    push(`/search/${searchTerm}`)
+  }
 
   return (
     <AppBar>
@@ -24,7 +33,7 @@ export const Navbar = () => {
 
         <Box flex={1} />
 
-        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <Box sx={{ display: isSearchVisible ? 'none' : { xs: 'none', md: 'block' } }}>
           <Link component={NextLink} href='/category/men'>
             <Button color={gender === 'men' ? 'primary' : 'info'} >
               Hombres
@@ -44,7 +53,44 @@ export const Navbar = () => {
 
         <Box flex={1} />
 
-        <IconButton>
+        {/* Pantalla grande */}
+        {
+          isSearchVisible ? (
+            <Input
+              sx={{ display: { xs: 'none', sm: 'flex' } }}
+              className='fadeIn'
+              autoFocus
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              onKeyUp={e => e.key === 'Enter' ? onSearchTerm() : null}
+              type='text'
+              placeholder="Buscar..."
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setIsSearchVisible(false)}
+                    aria-label="toggle password visibility"
+                  >
+                    <ClearOutlinedIcon />
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+          ) : (
+            <IconButton
+              sx={{ display: { xs: 'none', sm: 'flex' } }}
+              className='fadeIn'
+              onClick={() => setIsSearchVisible(true)} >
+              <SearchOutlinedIcon />
+            </IconButton>
+          )
+        }
+
+        {/* Pantallas small */}
+        <IconButton
+          sx={{ display: { xs: 'flex', sm: 'none' } }}
+          onClick={toogleSideMenu}
+        >
           <SearchOutlinedIcon />
         </IconButton>
 

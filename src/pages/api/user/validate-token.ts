@@ -37,7 +37,7 @@ const checkJWT = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   await db.connect()
   const user = await User.findById(userId).lean()
   await db.disconnect()
-
+  
   if (!user) {
     return res.status(400).json({ message: 'No existe usuario con ese id' })
   }

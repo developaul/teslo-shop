@@ -3,10 +3,12 @@ import Cookie from 'js-cookie'
 
 import { CartContext, cartReducer } from './'
 import { ICartProduct } from '@/interfaces'
-import { productsAreEqual } from '@/utils'
+import { productsAreEqual, getAddressFromCookies } from '@/utils'
 
 export interface CartState {
   cart: ICartProduct[]
+  isLoaded: boolean
+  shippingAddress?: ShippingAddress
 }
 
 export interface OrderCartSummary {
@@ -16,8 +18,21 @@ export interface OrderCartSummary {
   total: number;
 }
 
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  address: string;
+  address2?: string;
+  zip: string;
+  city: string;
+  country: string;
+  phone: string;
+}
+
 const CART_INITIAL_STATE: CartState = {
-  cart: []
+  isLoaded: false,
+  cart: [],
+  shippingAddress: undefined
 }
 
 interface Props {
@@ -36,6 +51,13 @@ export const CartProvider: FC<Props> = ({ children }) => {
     }
   }, [])
 
+  useEffect(() => {
+    try {
+      const shippingAddress = getAddressFromCookies()
+      dispatch({ type: '[Cart] - LoadAddress from cookies', payload: shippingAddress })
+    } catch (error) {}
+  }, [])
+  
   const orderSummary = useMemo(() => {
     const numberOfItems = state.cart.reduce((prev, current) => prev + current.quantity, 0)
     const subTotal = state.cart.reduce((prev, current) => prev + (current.price * current.quantity), 0)

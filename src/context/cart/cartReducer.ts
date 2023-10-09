@@ -9,6 +9,8 @@ type CartActionType =
   | { type: '[Cart] - Change cart quantity', payload: ICartProduct }
   | { type: '[Cart] - Remove product in cart', payload: ICartProduct }
   | { type: '[Cart] - LoadAddress from cookies', payload: ShippingAddress }
+  | { type: '[Cart] - Update Address', payload: ShippingAddress }
+
 
 export const cartReducer = (state: CartState, action: CartActionType): CartState => {
   switch (action.type) {
@@ -31,6 +33,7 @@ export const cartReducer = (state: CartState, action: CartActionType): CartState
       }
     
     case '[Cart] - LoadAddress from cookies':
+    case '[Cart] - Update Address':
       return { ...state, shippingAddress: action.payload }
 
     default:

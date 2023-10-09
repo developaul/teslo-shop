@@ -1,5 +1,5 @@
 import { FC, ReactElement, useEffect, useMemo, useReducer } from 'react'
-import Cookie from 'js-cookie'
+import Cookies from 'js-cookie'
 
 import { CartContext, cartReducer } from './'
 import { ICartProduct } from '@/interfaces'
@@ -44,7 +44,7 @@ export const CartProvider: FC<Props> = ({ children }) => {
 
   useEffect(() => {
     try {
-      const cookieProducts = JSON.parse(Cookie.get('cart') ?? '') ?? []
+      const cookieProducts = JSON.parse(Cookies.get('cart') ?? '') ?? []
       dispatch({ type: '[Cart] - LoadCart from cookies | storage', payload: cookieProducts })
     } catch (error) {
       dispatch({ type: '[Cart] - LoadCart from cookies | storage', payload: [] })
@@ -75,7 +75,7 @@ export const CartProvider: FC<Props> = ({ children }) => {
     const productInCart = state.cart.some((product) => productsAreEqual(product, newProduct))
 
     if (!productInCart) {
-      Cookie.set('cart', JSON.stringify(state.cart.concat(newProduct)))
+      Cookies.set('cart', JSON.stringify(state.cart.concat(newProduct)))
       return dispatch({ type: '[Cart] - Update products in cart', payload: state.cart.concat(newProduct) })
     }
 
@@ -86,7 +86,7 @@ export const CartProvider: FC<Props> = ({ children }) => {
         return { ...product, quantity: product.quantity + newProduct.quantity }
       })
 
-    Cookie.set('cart', JSON.stringify(updatedProducts))
+    Cookies.set('cart', JSON.stringify(updatedProducts))
     dispatch({ type: '[Cart] - Update products in cart', payload: updatedProducts })
   }
 
@@ -98,6 +98,18 @@ export const CartProvider: FC<Props> = ({ children }) => {
     dispatch({ type: '[Cart] - Remove product in cart', payload: product })
   }
 
+  const updateShippingAddress = (data: ShippingAddress) => {
+    Cookies.set('firstName', data.firstName)
+    Cookies.set('lastName', data.lastName)
+    Cookies.set('address', data.address)
+    Cookies.set('address2', data.address2 ?? '')
+    Cookies.set('zip', data.zip)
+    Cookies.set('city', data.city)
+    Cookies.set('country', data.country)
+    Cookies.set('phone', data.phone)
+
+    dispatch({ type: '[Cart] - Update Address', payload: data })
+  }
 
   return (
     <CartContext.Provider
@@ -107,6 +119,7 @@ export const CartProvider: FC<Props> = ({ children }) => {
         addProductToCart,
         updateCartQuantity,
         removeCartProduct,
+        updateShippingAddress
       }}>
       {children}
     </CartContext.Provider>

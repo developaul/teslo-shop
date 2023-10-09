@@ -1,3 +1,4 @@
+import { useContext, useMemo } from 'react'
 import NextLink from 'next/link'
 import {
   Box, Button, Card, CardContent, Divider,
@@ -6,8 +7,16 @@ import {
 
 import { ShopLayout } from '@/components/layouts'
 import { CartList, OrdenSummary } from '@/components/cart'
+import { CartContext } from '@/context'
+import { countries } from '@/utils'
 
 const SummaryPage = () => {
+  const { shippingAddress, orderSummary } = useContext(CartContext)
+
+  if(!shippingAddress) return <></>
+
+  const { firstName, lastName, address, address2, city, country, phone, zip } = shippingAddress
+
   return (
     <ShopLayout title='Resumen de orden' pageDescription='Resumen de la orden'>
       <Typography variant='h1' component='h1' >Resumen de la orden</Typography>
@@ -20,7 +29,7 @@ const SummaryPage = () => {
         <Grid item xs={12} sm={5}>
           <Card className='summary-card'>
             <CardContent>
-              <Typography variant='h2'>Resumen (3 productos)</Typography>
+              <Typography variant='h2'>Resumen ({orderSummary.numberOfItems} {orderSummary.numberOfItems === 1 ? 'producto' : 'productos'})</Typography>
               <Divider sx={{ my: 1 }} />
 
               <Box display='flex' justifyContent='space-between'>
@@ -33,11 +42,11 @@ const SummaryPage = () => {
                 </NextLink>
               </Box>
 
-              <Typography>Paul chavez</Typography>
-              <Typography>323 Algun lugar</Typography>
-              <Typography>Stittsville, HYA 23S</Typography>
-              <Typography>Peru</Typography>
-              <Typography>+51 123456789</Typography>
+              <Typography>{firstName} {lastName}</Typography>
+              <Typography>{address}{address2 ? `, ${address2}` : ''}</Typography>
+              <Typography>{city}, {zip}</Typography>
+              <Typography>{countries.find(({code}) => code === country)?.name ?? ''}</Typography>
+              <Typography>{phone}</Typography>
 
               <Divider sx={{ my: 1 }} />
 

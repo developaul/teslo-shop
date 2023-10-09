@@ -1,3 +1,4 @@
+import { useContext } from 'react'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import {
@@ -10,6 +11,7 @@ import Cookies from 'js-cookie'
 
 import { ShopLayout } from '@/components/layouts'
 import { countries, getAddressFromCookies } from '@/utils'
+import { CartContext } from '@/context'
 
 export interface FormData {
   firstName: string;
@@ -27,6 +29,8 @@ const AddressPage = () => {
 
   const router = useRouter()
 
+  const { updateShippingAddress } = useContext(CartContext)
+
   const {
     handleSubmit,
     register,
@@ -34,14 +38,7 @@ const AddressPage = () => {
   } = useForm<FormData>({ defaultValues: getAddressFromCookies() })
 
   const onSubmitAddress = (data: FormData) => {
-    Cookies.set('firstName', data.firstName)
-    Cookies.set('lastName', data.lastName)
-    Cookies.set('address', data.address)
-    Cookies.set('address2', data.address2 ?? '')
-    Cookies.set('zip', data.zip)
-    Cookies.set('city', data.city)
-    Cookies.set('country', data.country)
-    Cookies.set('phone', data.phone)
+    updateShippingAddress(data)
 
     router.push('/checkout/summary')
   }
@@ -83,7 +80,7 @@ const AddressPage = () => {
               <TextField
                 select
                 {...register('country', { required: 'El pais es obligatorio' })}
-                defaultValue={countries[0].code}
+                defaultValue={Cookies.get('country') ?? countries[0].code}
                 error={Boolean(errors.country)}
                 helperText={errors.country?.message}
                 variant='filled'

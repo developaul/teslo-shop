@@ -25,7 +25,7 @@ export const connect = async () => {
       return;
     }
 
-    await mongoose.disconnect();
+    await disconnect();
   }
 
   await mongoose.connect(process.env.MONGO_URL || '');

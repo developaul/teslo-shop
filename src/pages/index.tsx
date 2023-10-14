@@ -1,4 +1,5 @@
 import { NextPage } from "next"
+import { useSession } from "next-auth/react"
 import { Typography } from "@mui/material"
 
 import { ShopLayout } from "@/components/layouts"

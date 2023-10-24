@@ -2,31 +2,15 @@ import { FC, ReactElement, useEffect, useMemo, useReducer } from 'react'
 import Cookies from 'js-cookie'
 
 import { CartContext, cartReducer } from './'
-import { ICartProduct } from '@/interfaces'
+import { ICartProduct, IOrder, ShippingAddress } from '@/interfaces'
 import { productsAreEqual, getAddressFromCookies } from '@/utils'
+import tesloApi from '@/api/tesloApi'
+import axios from 'axios'
 
 export interface CartState {
   cart: ICartProduct[]
   isLoaded: boolean
   shippingAddress?: ShippingAddress
-}
-
-export interface OrderCartSummary {
-  numberOfItems: number;
-  subTotal: number;
-  tax: number;
-  total: number;
-}
-
-export interface ShippingAddress {
-  firstName: string;
-  lastName: string;
-  address: string;
-  address2?: string;
-  zip: string;
-  city: string;
-  country: string;
-  phone: string;
 }
 
 const CART_INITIAL_STATE: CartState = {
@@ -55,9 +39,9 @@ export const CartProvider: FC<Props> = ({ children }) => {
     try {
       const shippingAddress = getAddressFromCookies()
       dispatch({ type: '[Cart] - LoadAddress from cookies', payload: shippingAddress })
-    } catch (error) {}
+    } catch (error) { }
   }, [])
-  
+
   const orderSummary = useMemo(() => {
     const numberOfItems = state.cart.reduce((prev, current) => prev + current.quantity, 0)
     const subTotal = state.cart.reduce((prev, current) => prev + (current.price * current.quantity), 0)
@@ -111,6 +95,41 @@ export const CartProvider: FC<Props> = ({ children }) => {
     dispatch({ type: '[Cart] - Update Address', payload: data })
   }
 
+  const createOrder = async (): Promise<{ hasError: boolean; message: string }> => {
+    try {
+      if (!state.shippingAddress) throw new Error('No hay direccion de entrega')
+
+      const body: IOrder = {
+        orderItems: state.cart.map((p) => ({ ...p, size: p.size! })),
+        shippingAddress: state.shippingAddress,
+        orderCartSummary: orderSummary,
+        isPaid: false
+      }
+
+      const { data } = await tesloApi.post<IOrder>('/orders', body)
+
+      dispatch({ type: '[Cart] - Order Completed' })
+      Cookies.set('cart', JSON.stringify([]))
+
+      return {
+        hasError: false,
+        message: data._id!
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          hasError: true,
+          message: error.response?.data.message
+        }
+      }
+
+      return {
+        hasError: true,
+        message: 'Error no controlado, hable con el administrador'
+      }
+    }
+  }
+
   return (
     <CartContext.Provider
       value={{
@@ -119,7 +138,8 @@ export const CartProvider: FC<Props> = ({ children }) => {
         addProductToCart,
         updateCartQuantity,
         removeCartProduct,
-        updateShippingAddress
+        updateShippingAddress,
+        createOrder
       }}>
       {children}
     </CartContext.Provider>

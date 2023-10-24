@@ -1,7 +1,7 @@
 import { productsAreEqual } from '@/utils';
-import { CartState, ShippingAddress } from '.';
+import { CartState } from '.';
 
-import { ICartProduct } from '@/interfaces';
+import { ICartProduct, ShippingAddress } from '@/interfaces';
 
 type CartActionType =
   | { type: '[Cart] - LoadCart from cookies | storage', payload: ICartProduct[] }
@@ -10,7 +10,7 @@ type CartActionType =
   | { type: '[Cart] - Remove product in cart', payload: ICartProduct }
   | { type: '[Cart] - LoadAddress from cookies', payload: ShippingAddress }
   | { type: '[Cart] - Update Address', payload: ShippingAddress }
-
+  | { type: '[Cart] - Order Completed' }
 
 export const cartReducer = (state: CartState, action: CartActionType): CartState => {
   switch (action.type) {
@@ -31,10 +31,13 @@ export const cartReducer = (state: CartState, action: CartActionType): CartState
         ...state,
         cart: state.cart.filter((product) => !productsAreEqual(product, action.payload))
       }
-    
+
     case '[Cart] - LoadAddress from cookies':
     case '[Cart] - Update Address':
       return { ...state, shippingAddress: action.payload }
+
+    case '[Cart] - Order Completed':
+      return { ...state, cart: [] }
 
     default:
       return state

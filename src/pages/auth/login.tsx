@@ -21,13 +21,12 @@ const LoginPage = () => {
   const [showError, setShowError] = useState(false)
 
   const [providers, setProviders] = useState<any>({})
-  console.log("🚀 ~ file: login.tsx:24 ~ LoginPage ~ providers:", providers)
 
   useEffect(() => {
 
     getProviders()
       .then((prov) => {
-        setProviders(prov)
+        setProviders(prov ?? {})
       })
 
   }, [])
@@ -38,7 +37,7 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm<FormData>()
 
-  
+
 
   const onLoginUser = async ({ email, password }: FormData) => {
     setShowError(false)
@@ -116,25 +115,25 @@ const LoginPage = () => {
 
             <Grid item xs={12} display='flex' flexDirection='column' justifyContent='end'>
               <Divider sx={{ width: '100%', mb: 2 }} />
-              
+
               {
                 Object.values(providers)
-                .filter(({ id }: any) => id !== "credentials")
-                .map((provider: any) => {
+                  .filter(({ id }: any) => id !== "credentials")
+                  .map((provider: any) => {
 
-                  return (                    
-                    <Button 
-                      key={provider.id}
-                      variant='outlined'
-                      fullWidth
-                      onClick={() => signIn(provider.id)}
-                      color='primary'
-                      sx={{ mb: 1 }}
-                    >
-                      {provider.name}
-                    </Button>
-                  )
-                })
+                    return (
+                      <Button
+                        key={provider.id}
+                        variant='outlined'
+                        fullWidth
+                        onClick={() => signIn(provider.id)}
+                        color='primary'
+                        sx={{ mb: 1 }}
+                      >
+                        {provider.name}
+                      </Button>
+                    )
+                  })
               }
 
 

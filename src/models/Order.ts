@@ -4,7 +4,6 @@ import { IOrder } from '@/interfaces'
 
 const orderSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  paymentResult: { type: String },
   orderItems: [{
     _id: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
     title: { type: String, required: true },
@@ -31,7 +30,8 @@ const orderSchema = new Schema({
     total: { type: Number, required: true },
   },
   isPaid: { type: Boolean, default: false },
-  paidAt: { type: String }
+  paidAt: { type: String },
+  transactionId: { type: String }
 }, { timestamps: true })
 
 

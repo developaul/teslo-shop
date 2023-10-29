@@ -36,16 +36,18 @@ const AddressPage = () => {
     register,
     formState: { errors },
     reset
-  } = useForm<FormData>({ defaultValues: {
-    firstName: '',
-    lastName: '',
-    address: '',
-    address2: '',
-    zip: '',
-    city: '',
-    country: countries[0].code,
-    phone: '',
-  } })
+  } = useForm<FormData>({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      address: '',
+      address2: '',
+      zip: '',
+      city: '',
+      country: Cookies.get('country') ?? countries[0].code,
+      phone: '',
+    }
+  })
 
   useEffect(() => {
     reset(getAddressFromCookies())
@@ -94,7 +96,7 @@ const AddressPage = () => {
               <TextField
                 select
                 {...register('country', { required: 'El pais es obligatorio' })}
-                defaultValue={Cookies.get('country') ?? countries[0].code}
+                // defaultValue={Cookies.get('country') ?? countries[0].code}
                 error={Boolean(errors.country)}
                 helperText={errors.country?.message}
                 variant='filled'

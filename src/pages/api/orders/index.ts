@@ -5,7 +5,6 @@ import { db } from '@/database'
 import { IOrder } from '@/interfaces'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]'
-import { getSession } from 'next-auth/react'
 import { OrderModel, ProductModel } from '@/models'
 
 type Data =
@@ -55,6 +54,8 @@ const createOrder = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
     const userId = session.user._id
     const newOrder = new OrderModel({ ...req.body, isPaid: false, user: userId })
+    newOrder.orderCartSummary.total = Math.round(newOrder.orderCartSummary.total * 100) / 100
+
     await newOrder.save()
     await db.disconnect()
 

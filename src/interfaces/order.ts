@@ -9,6 +9,7 @@ export interface IOrder {
   orderCartSummary: OrderCartSummary;
   isPaid: boolean;
   paidAt?: string;
+  transactionId?: string;
 }
 
 export interface IOrderItem {

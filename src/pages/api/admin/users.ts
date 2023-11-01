@@ -28,7 +28,7 @@ const updateUser = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
   if (!isValidObjectId(userId)) return res.status(400).json({ message: 'No existe usuario por ese id' })
 
-  const validRoles = ['admin', 'super-user', 'SEO']
+  const validRoles = ['admin', 'super-user', 'SEO', 'client']
 
   if (!validRoles.includes(role)) return res.status(400).json({ message: `Rol no permitido: ${validRoles.join(', ')}` })
 
@@ -50,7 +50,7 @@ const updateUser = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
 const getUsers = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
 
   await db.connect()
-  const users = await UserModel.find({ password: 0 }).lean()
+  const users = await UserModel.find({}).select({ password: 0 }).lean()
   await db.disconnect()
 
   return res.status(200).json(users)

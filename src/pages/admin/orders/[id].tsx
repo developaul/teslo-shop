@@ -1,63 +1,27 @@
 import { GetServerSideProps, NextPage } from 'next'
-import { getServerSession } from 'next-auth'
-import NextLink from 'next/link'
-import { useState } from 'react'
-import { PayPalButtons } from '@paypal/react-paypal-js'
 import {
-  Box, Card, CardContent, Chip, CircularProgress, Divider,
-  Grid, Link, Typography
+  Box, Card, CardContent, Chip, Divider,
+  Grid, Typography
 } from '@mui/material'
-import { useRouter } from 'next/router'
+import { AirplaneTicketOutlined, CreditCardOffOutlined, CreditScoreOutlined } from '@mui/icons-material'
 
-import { ShopLayout } from '@/components/layouts'
+import { AdminLayout } from '@/components/layouts'
 import { CartList, OrdenSummary } from '@/components/cart'
-import { CreditCardOffOutlined, CreditScoreOutlined } from '@mui/icons-material'
-import { authOptions } from '../api/auth/[...nextauth]'
-import tesloApi from '@/api/tesloApi'
 
 import { dbOrders } from '@/database'
 import { IOrder } from '@/interfaces'
 
-interface OrderResponseBody {
-  status:
-  | "CREATED"
-  | "SAVED"
-  | "APPROVED"
-  | "VOIDED"
-  | "COMPLETED"
-  | "PAYER_ACTION_REQUIRED"
-  id: string
-}
 
 interface Props {
   order: IOrder
 }
 
 const OrderPage: NextPage<Props> = ({ order }) => {
-  const router = useRouter()
-
-  const [isPaying, setIsPaying] = useState(false)
 
   const { shippingAddress, orderCartSummary } = order
 
-  const onOrderCompleted = async (details: OrderResponseBody) => {
-    if (details.status !== 'COMPLETED') return alert('No hay pago en Paypal')
-
-    setIsPaying(true)
-
-    try {
-      await tesloApi.post('orders/pay', { orderId: order._id, transactionId: details.id })
-      router.reload()
-    } catch (error) {
-      setIsPaying(false)
-      console.log(error)
-      alert('Error')
-    }
-  }
-
   return (
-    <ShopLayout title='Resumen de la orden' pageDescription='Resumen de la orden'>
-      <Typography variant='h1' component='h1' >Resumen: {order._id}</Typography>
+    <AdminLayout title='Resumen de la orden' subTitle={`Orden ID: ${order._id}`} icon={<AirplaneTicketOutlined />}>
       {order.isPaid ? (
         <Chip
           sx={{ my: 2 }}
@@ -103,11 +67,7 @@ const OrderPage: NextPage<Props> = ({ order }) => {
 
               <Box sx={{ mt: 3 }} display='flex' flexDirection='column'>
 
-                <Box sx={{ display: isPaying ? 'flex' : 'none' }} display='flex' justifyContent='center' className='fadeIn'>
-                  <CircularProgress />
-                </Box>
-
-                <Box sx={{ display: isPaying ? 'none' : 'flex', flex: 1, flexDirection: 'column' }}>
+                <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
                   {(order.isPaid ? (
                     <Chip
                       sx={{ my: 2 }}
@@ -117,23 +77,12 @@ const OrderPage: NextPage<Props> = ({ order }) => {
                       icon={<CreditScoreOutlined />}
                     />
                   ) : (
-                    <PayPalButtons
-                      createOrder={(_, actions) => {
-                        return actions.order.create({
-                          purchase_units: [
-                            {
-                              amount: {
-                                value: `${order.orderCartSummary.total}`
-                              }
-                            }
-                          ]
-                        })
-                      }}
-                      onApprove={(_, actions) => {
-                        return actions.order!.capture().then(details => {
-                          onOrderCompleted(details)
-                        })
-                      }}
+                    <Chip
+                      sx={{ my: 2 }}
+                      label='Pendiente de pago'
+                      variant='outlined'
+                      color='error'
+                      icon={<CreditCardOffOutlined />}
                     />
                   )
                   )}
@@ -144,41 +93,22 @@ const OrderPage: NextPage<Props> = ({ order }) => {
           </Card>
         </Grid>
       </Grid>
-    </ShopLayout>
+    </AdminLayout>
   )
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res, query }) => {
   const { id = '' } = query
 
-  const session: any = await getServerSession(req, res, authOptions)
-
-  if (!session)
-    return {
-      redirect: {
-        destination: `/auth/login?p=orders/${id}`,
-        permanent: false
-      }
-    }
-
   const order = await dbOrders.getOrderById(id.toString())
 
   if (!order)
     return {
       redirect: {
-        destination: `/orders/history`,
+        destination: `/admin/orders`,
         permanent: false
       }
     }
-
-  if (order.user !== session.user._id) {
-    return {
-      redirect: {
-        destination: `/orders/history`,
-        permanent: false
-      }
-    }
-  }
 
   return {
     props: {

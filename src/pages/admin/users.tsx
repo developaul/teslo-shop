@@ -8,9 +8,6 @@ import { AdminLayout } from '@/components/layouts'
 import { IUser } from '@/interfaces'
 import tesloApi from '@/api/tesloApi'
 
-
-
-
 const UsersPage = () => {
 
   const { data, isLoading, mutate } = useSWR<IUser[]>('/api/admin/users')

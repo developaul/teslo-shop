@@ -44,7 +44,7 @@ const getDasboardInfo = async (req: NextApiRequest, res: NextApiResponse<Data>) 
   return res.status(200).json({
     numberOfOrders,
     paidOrders,
-    notPaidOrders: numberOfClients - paidOrders,
+    notPaidOrders: numberOfOrders - paidOrders,
     numberOfClients,
     numberOfProducts,
     productsWithNoInventory,

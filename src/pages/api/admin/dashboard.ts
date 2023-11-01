@@ -2,9 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { db } from '@/database'
 
-import { DashboardInfo, IOrder } from '@/interfaces'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../auth/[...nextauth]'
+import { DashboardInfo } from '@/interfaces'
 import { OrderModel, ProductModel, UserModel } from '@/models'
 
 type Data =

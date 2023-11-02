@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
+import NextLink from 'next/link'
 import useSWR from 'swr'
-import { CardMedia, Grid } from '@mui/material'
+import { CardMedia, Grid, Link } from '@mui/material'
 import { CategoryOutlined } from '@mui/icons-material'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
@@ -24,7 +25,21 @@ const columns: GridColDef[] = [
       )
     }
   },
-  { field: 'title', headerName: 'Titulo', width: 250 },
+  {
+    field: 'title',
+    headerName: 'Titulo',
+    width: 250,
+    renderCell: ({ row }) => {
+      return (
+        <Link
+          underline='always'
+          component={NextLink}
+          href={`/admin/products/${row.slug}`}>
+          {row.title}
+        </Link>
+      )
+    }
+  },
   { field: 'gender', headerName: 'Genero' },
   { field: 'type', headerName: 'Tipo' },
   { field: 'inStock', headerName: 'Inventario' },

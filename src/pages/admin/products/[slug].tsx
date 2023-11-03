@@ -13,6 +13,8 @@ import { AdminLayout } from '@/components/layouts';
 import { dbProducts } from '@/database';
 
 import { IProduct, IType } from '@/interfaces';
+import tesloApi from '@/api/tesloApi';
+import { useRouter } from 'next/router';
 
 
 const validTypes = ['shirts', 'pants', 'hoodies', 'hats']
@@ -39,11 +41,17 @@ interface Props {
 
 const ProductAdminPage: FC<Props> = ({ product }) => {
 
+  const router = useRouter()
+
   const [newTagValue, setNewTagValue] = useState('')
 
-  const { register, handleSubmit, formState: { errors }, getValues, setValue, watch } = useForm<FormData>({
+  const {
+    register, handleSubmit, formState: { errors, isSubmitting },
+    getValues, setValue, watch
+  } = useForm<FormData>({
     defaultValues: product,
   })
+  console.log("🚀 ~ file: [slug].tsx:47 ~ isSubmitting:", isSubmitting)
 
   useEffect(() => {
 
@@ -96,8 +104,22 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 
   }
 
-  const onSubmit = (formData: FormData) => {
-    console.log("🚀 ~ file: [slug].tsx:51 ~ onSubmit ~ formData:", formData)
+  const onSubmit = async (formData: FormData) => {
+
+    if (formData.images.length < 2) return alert('Minimo 2 imagenes')
+
+    try {
+      const { data } = await tesloApi({
+        url: '/admin/products',
+        method: 'PUT',
+        data: formData
+      })
+
+      if (!formData._id) router.reload()
+
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -113,6 +135,7 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
             startIcon={<SaveOutlined />}
             sx={{ width: '150px' }}
             type="submit"
+            disabled={isSubmitting}
           >
             Guardar
           </Button>
@@ -353,7 +376,6 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
       }
     }
   }
-
 
   return {
     props: {

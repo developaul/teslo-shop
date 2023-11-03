@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { CircularProgress, Grid, Typography } from '@mui/material'
-import { AccessTimeOutlined, AttachMoneyOutlined, CancelPresentationOutlined, CategoryOutlined, CreditCardOffOutlined, DashboardOutlined, GroupOutlined, ProductionQuantityLimitsOutlined } from '@mui/icons-material'
+import {
+  AccessTimeOutlined, AttachMoneyOutlined, CancelPresentationOutlined,
+  CategoryOutlined, CreditCardOffOutlined, DashboardOutlined,
+  GroupOutlined, ProductionQuantityLimitsOutlined
+} from '@mui/icons-material'
 
 import { SummaryTile } from '@/components/admin'
 import { AdminLayout } from '@/components/layouts'

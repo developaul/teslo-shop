@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
@@ -43,7 +43,7 @@ interface Props {
 const ProductAdminPage: FC<Props> = ({ product }) => {
 
   const router = useRouter()
-
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [newTagValue, setNewTagValue] = useState('')
 
   const {
@@ -102,6 +102,26 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 
     setValue('tags', tags.filter(_tag => _tag !== tag), { shouldValidate: true })
 
+  }
+
+  const onFileSelected = async ({ target }: ChangeEvent<HTMLInputElement>) => {
+    if (!target.files || target.files.length === 0) return
+
+    try {
+      for (const file of target.files) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const { data } = await tesloApi.post<{ message: string }>('/admin/upload', formData)
+        setValue('images', [...getValues('images'), data.message], { shouldValidate: true })
+      }
+
+    } catch (error) {
+      console.log({ error })
+    }
+  }
+
+  const onDeleteImage = (image: string) => {
+    setValue('images', getValues('images').filter(img => img !== image), { shouldValidate: true })
   }
 
   const onSubmit = async (formData: FormData) => {
@@ -319,31 +339,45 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
               <Button
                 color="secondary"
                 fullWidth
+                onClick={() => fileInputRef.current?.click()}
                 startIcon={<UploadOutlined />}
                 sx={{ mb: 3 }}
               >
                 Cargar imagen
+                <input
+                  ref={fileInputRef}
+                  type='file'
+                  multiple
+                  onChange={onFileSelected}
+                  accept='image/png, image/gif, image/jpg'
+                  style={{ display: 'none' }}
+                />
               </Button>
+
 
               <Chip
                 label="Es necesario al 2 imagenes"
                 color='error'
                 variant='outlined'
+                sx={{ display: getValues('images').length < 2 ? 'flex' : 'none' }}
               />
 
               <Grid container spacing={2}>
                 {
-                  product.images.map(img => (
+                  getValues('images').map(img => (
                     <Grid item xs={4} sm={3} key={img}>
                       <Card>
                         <CardMedia
                           component='img'
                           className='fadeIn'
-                          image={`/products/${img}`}
+                          image={img}
                           alt={img}
                         />
                         <CardActions>
-                          <Button fullWidth color="error">
+                          <Button
+                            onClick={() => onDeleteImage(img)}
+                            fullWidth
+                            color="error">
                             Borrar
                           </Button>
                         </CardActions>

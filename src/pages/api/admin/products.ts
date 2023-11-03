@@ -1,10 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { isValidObjectId } from 'mongoose'
+import { v2 as cloudinary } from 'cloudinary'
 
 import { db } from '@/database'
 import { ProductModel } from '@/models'
 
 import { IProduct } from '@/interfaces'
-import { isValidObjectId } from 'mongoose'
+
+cloudinary.config(process.env.CLOUDINARY_URL ?? '')
 
 type Data =
   | { message: string }
@@ -36,9 +39,15 @@ const getProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     .lean()
   await db.disconnect()
 
-  // TODO: Tendremos que actualizar las imagenes
+  const updatedProducts = products.map(product => {
+    product.images = product.images.map(image => {
+      return image.includes('https') ? image : `${process.env.HOST_NAME}products/${image}`
+    })
 
-  return res.status(200).json(products)
+    return product
+  })
+
+  return res.status(200).json(updatedProducts)
 }
 
 const updateProduct = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
@@ -59,7 +68,14 @@ const updateProduct = async (req: NextApiRequest, res: NextApiResponse<Data>) =>
       return res.status(400).json({ message: 'No existe ese producto' })
     }
 
-    // TODO: Eliminar fotos en Cloudinary
+    product.images.forEach(async (image) => {
+      if (images.includes(image) || !image.startsWith('https')) return
+
+      const [fileId, extension] = image.substring(image.lastIndexOf('/') + 1).split('.')
+      console.log("eliminando imagenes", { fileId, extension, image })
+
+      await cloudinary.uploader.destroy(fileId)
+    })
 
     await product.updateOne(req.body)
 

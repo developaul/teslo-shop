@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import NextLink from 'next/link'
 import useSWR from 'swr'
-import { CardMedia, Grid, Link } from '@mui/material'
-import { CategoryOutlined } from '@mui/icons-material'
+import { Box, Button, CardMedia, Grid, Link } from '@mui/material'
+import { AddOutlined, CategoryOutlined } from '@mui/icons-material'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
 import { AdminLayout } from '@/components/layouts'
@@ -83,6 +83,14 @@ const ProductsPage = () => {
       subTitle='Mantenimiento de productos'
       icon={<CategoryOutlined />}
     >
+      <Box sx={{ display: 'flex', justifyContent: 'end', mb: 2 }}>
+        <Button
+          startIcon={<AddOutlined />}
+          color='secondary'
+          href='/admin/products/new'>
+          Crear producto
+        </Button>
+      </Box>
       <Grid className='fadeIn' container>
         <Grid item xs={12} sx={{ height: 650, width: '100%' }}>
           <DataGrid

@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState } from 'react'
 import { GetServerSideProps } from 'next'
+import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import {
   Box, Button, capitalize, Card, CardActions, CardMedia,
@@ -11,10 +12,10 @@ import { DriveFileRenameOutline, SaveOutlined, UploadOutlined } from '@mui/icons
 
 import { AdminLayout } from '@/components/layouts';
 import { dbProducts } from '@/database';
+import { ProductModel } from '@/models';
 
 import { IProduct, IType } from '@/interfaces';
 import tesloApi from '@/api/tesloApi';
-import { useRouter } from 'next/router';
 
 
 const validTypes = ['shirts', 'pants', 'hoodies', 'hats']
@@ -51,7 +52,6 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
   } = useForm<FormData>({
     defaultValues: product,
   })
-  console.log("🚀 ~ file: [slug].tsx:47 ~ isSubmitting:", isSubmitting)
 
   useEffect(() => {
 
@@ -109,13 +109,13 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
     if (formData.images.length < 2) return alert('Minimo 2 imagenes')
 
     try {
-      const { data } = await tesloApi({
+      await tesloApi({
         url: '/admin/products',
-        method: 'PUT',
-        data: formData
+        method: product._id ? 'PUT' : 'POST',
+        data: { ...formData, _id: product._id }
       })
 
-      if (!formData._id) router.reload()
+      if (!formData._id) router.replace(`/admin/products/${formData.slug}`)
 
     } catch (error) {
       console.log(error)
@@ -366,7 +366,17 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { slug = '' } = query;
 
-  const product = await dbProducts.getProductBySlug(slug.toString());
+  let product: IProduct | null
+
+  if (slug === 'new') {
+    const tempProduct = JSON.parse(JSON.stringify(new ProductModel()))
+    delete tempProduct._id
+    tempProduct.images = ['img1.jpg', 'img2.jpg']
+
+    product = tempProduct
+  } else {
+    product = await dbProducts.getProductBySlug(slug.toString());
+  }
 
   if (!product) {
     return {
